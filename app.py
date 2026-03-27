@@ -3,8 +3,9 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import pytesseract
-import cv2
-import numpy as np
+img = np.array(imagem)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+texto = pytesseract.image_to_string(gray)
 
 st.set_page_config(page_title="DOMMA SaaS", layout="wide")
 
