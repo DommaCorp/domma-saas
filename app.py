@@ -2,30 +2,27 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 import plotly.express as px
-import pytesseract
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-texto = pytesseract.image_to_string(gray)
 
 st.set_page_config(page_title="DOMMA SaaS", layout="wide")
 
 st.title("🧠 DOMMA SaaS - Inteligência de Ads")
 
 # =========================
-# OCR (LEITURA DE PRINT)
+# FUNÇÃO OCR (SEM ERRO NA NUVEM)
 # =========================
 def extrair_texto(imagem):
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    texto = pytesseract.image_to_string(gray)
-    return texto
+    try:
+        import pytesseract
+        return pytesseract.image_to_string(imagem)
+    except:
+        return "OCR não disponível na nuvem"
 
 # =========================
-# SIDEBAR
+# UPLOAD DE PRINT (CORRETO)
 # =========================
-st.sidebar.header("📸 Upload de Prints")
+st.subheader("📸 Análise por Print")
 
-img_7 = st.sidebar.file_uploader("Print 7 dias", type=["png","jpg"])
-
-ocr_data = {}
+img_7 = st.file_uploader("Upload do print (7 dias)", type=["png", "jpg"])
 
 if img_7:
     imagem = Image.open(img_7)
@@ -33,13 +30,13 @@ if img_7:
 
     texto = extrair_texto(imagem)
 
-    st.subheader("🔍 Texto identificado (OCR)")
+    st.subheader("🔍 Texto identificado")
     st.code(texto)
 
 # =========================
-# INPUT MANUAL (fallback)
+# INPUT DE MÉTRICAS
 # =========================
-st.sidebar.header("📊 Métricas")
+st.sidebar.header("📊 Métricas da Campanha")
 
 imp = st.sidebar.number_input("Impressões", 0.0)
 clk = st.sidebar.number_input("Cliques", 0.0)
@@ -91,7 +88,7 @@ st.info(status)
 # =========================
 def diagnostico():
     if imp > 0 and clk == 0:
-        return "Problema de imagem (baixa atração)"
+        return "Problema de atração (imagem/título)"
     elif clk > 10 and ven == 0:
         return "Problema de conversão"
     elif roas > 6:
@@ -103,7 +100,7 @@ st.subheader("🧠 Diagnóstico")
 st.write(diagnostico())
 
 # =========================
-# GRÁFICO SIMPLES
+# GRÁFICO
 # =========================
 df = pd.DataFrame({
     "Métrica": ["CTR", "ROAS", "TACOS"],
@@ -114,11 +111,11 @@ fig = px.bar(df, x="Métrica", y="Valor")
 st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# CAMPANHAS (CSV)
+# CAMPANHAS CSV
 # =========================
 st.subheader("📂 Campanhas (7 dias)")
 
-camp_file = st.file_uploader("Upload campanhas", type=["csv"])
+camp_file = st.file_uploader("Upload campanhas (CSV)", type=["csv"])
 
 if camp_file:
     df_camp = pd.read_csv(camp_file)
