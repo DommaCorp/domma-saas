@@ -1,205 +1,85 @@
 import streamlit as st
-import pandas as pd
+from PIL import Image
+import pytesseract
+import re
 
 st.set_page_config(page_title="DOMMA SaaS", layout="wide")
 
-st.title("🧠 DOMMA SaaS - Inteligência de Ads")
+st.title("🧠 DOMMA SaaS - Inteligência Automática")
 
 # =========================
-# 📸 PRINTS (ESTRUTURA VISUAL)
+# OCR
 # =========================
-st.subheader("📸 Upload de Prints - Análise Completa")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.markdown("### 📊 Métricas")
-    metrica_30 = st.file_uploader("Métricas 30 dias", type=["png","jpg"], key="m30")
-    metrica_15 = st.file_uploader("Métricas 15 dias", type=["png","jpg"], key="m15")
-    metrica_7 = st.file_uploader("Métricas 7 dias", type=["png","jpg"], key="m7")
-
-with col2:
-    st.markdown("### 📈 Painel Ads")
-    painel_30 = st.file_uploader("Painel Ads 30 dias", type=["png","jpg"], key="p30")
-    painel_15 = st.file_uploader("Painel Ads 15 dias", type=["png","jpg"], key="p15")
-    painel_7 = st.file_uploader("Painel Ads 7 dias", type=["png","jpg"], key="p7")
-
-with col3:
-    st.markdown("### 🧩 Campanhas")
-    campanhas_img = st.file_uploader("Imagem geral das campanhas", type=["png","jpg"], key="camp")
-
-st.divider()
+def extrair_texto(imagem):
+    try:
+        return pytesseract.image_to_string(imagem)
+    except:
+        return ""
 
 # =========================
-# 🖼️ VISUALIZAÇÃO
+# EXTRAÇÃO DE DADOS
 # =========================
-st.subheader("🖼️ Visualização dos Prints")
+def extrair_numero(texto, padrao):
+    match = re.search(padrao, texto)
+    if match:
+        return float(match.group(1).replace(".", "").replace(",", "."))
+    return 0
 
-colA, colB, colC = st.columns(3)
+def analisar_texto(texto):
+    dados = {}
 
-with colA:
-    if metrica_30:
-        st.image(metrica_30, caption="Métricas 30 dias", use_container_width=True)
-    if metrica_15:
-        st.image(metrica_15, caption="Métricas 15 dias", use_container_width=True)
-    if metrica_7:
-        st.image(metrica_7, caption="Métricas 7 dias", use_container_width=True)
+    dados["vendas"] = extrair_numero(texto, r"R\$ ([\d\.,]+)")
+    dados["cliques"] = extrair_numero(texto, r"(\d+)\s+cliques")
+    dados["visitas"] = extrair_numero(texto, r"(\d+)\s+visitas")
 
-with colB:
-    if painel_30:
-        st.image(painel_30, caption="Painel 30 dias", use_container_width=True)
-    if painel_15:
-        st.image(painel_15, caption="Painel 15 dias", use_container_width=True)
-    if painel_7:
-        st.image(painel_7, caption="Painel 7 dias", use_container_width=True)
-
-with colC:
-    if campanhas_img:
-        st.image(campanhas_img, caption="Campanhas", use_container_width=True)
+    return dados
 
 # =========================
-# 📊 INPUT DOMMA (CÉREBRO)
+# PRINTS
 # =========================
-st.subheader("📊 Inserção de Dados para Análise")
+st.subheader("📸 Upload dos Prints")
 
-col1, col2, col3 = st.columns(3)
+metrica_7 = st.file_uploader("Métricas 7 dias", type=["png","jpg"])
 
-def bloco(nome):
-    st.markdown(f"### {nome}")
-    imp = st.number_input(f"Impressões {nome}", 0.0)
-    clk = st.number_input(f"Cliques {nome}", 0.0)
-    ven = st.number_input(f"Vendas {nome}", 0.0)
-    cus = st.number_input(f"Custo {nome}", 0.0)
-    fat = st.number_input(f"Faturamento {nome}", 0.0)
-    return imp, clk, ven, cus, fat
+if metrica_7:
+    imagem = Image.open(metrica_7)
+    st.image(imagem, caption="Print carregado")
 
-with col1:
-    imp30, clk30, ven30, cus30, fat30 = bloco("30 dias")
+    texto = extrair_texto(imagem)
 
-with col2:
-    imp15, clk15, ven15, cus15, fat15 = bloco("15 dias")
+    # =========================
+    # INTERPRETAÇÃO
+    # =========================
+    dados = analisar_texto(texto)
 
-with col3:
-    imp7, clk7, ven7, cus7, fat7 = bloco("7 dias")
+    st.subheader("🧠 Análise DOMMA Automática")
 
-# =========================
-# CÁLCULOS
-# =========================
-def calc(imp, clk, cus, fat):
-    ctr = clk / imp if imp > 0 else 0
-    roas = fat / cus if cus > 0 else 0
-    acos = cus / fat if fat > 0 else 0
-    return ctr, roas, acos
+    # Diagnóstico inteligente
+    if dados["cliques"] > 50 and dados["vendas"] == 0:
+        st.error("🚨 Muito clique sem venda → problema de conversão")
 
-ctr30, roas30, acos30 = calc(imp30, clk30, cus30, fat30)
-ctr15, roas15, acos15 = calc(imp15, clk15, cus15, fat15)
-ctr7, roas7, acos7 = calc(imp7, clk7, cus7, fat7)
+    if dados["visitas"] > 1000:
+        st.warning("⚠️ Muito tráfego → validar qualidade")
 
-# =========================
-# 🧠 LEITURA INTELIGENTE
-# =========================
-st.subheader("🧠 Leitura DOMMA")
+    if dados["vendas"] > 100:
+        st.success("🔥 Produto validado — potencial de escala")
 
-def tendencia(nome, v30, v15, v7):
-    if v7 > v15 > v30:
-        return f"📈 {nome} em crescimento"
-    elif v7 < v15 < v30:
-        return f"📉 {nome} em queda"
-    else:
-        return f"⚖️ {nome} estável"
-
-st.write(tendencia("CTR", ctr30, ctr15, ctr7))
-st.write(tendencia("ROAS", roas30, roas15, roas7))
-st.write(tendencia("ACOS", acos30, acos15, acos7))
-
-# =========================
-# 🧠 DIAGNÓSTICO PROFUNDO
-# =========================
-st.subheader("🧠 Diagnóstico Estratégico")
-
-if ctr7 < ctr15:
-    st.warning("Queda de CTR → problema de imagem ou título")
-
-if clk7 > 10 and ven7 == 0:
-    st.warning("Cliques sem venda → problema de conversão")
-
-if roas7 < roas15:
-    st.warning("ROAS caiu → piora na qualidade do tráfego ou oferta")
-
-if acos7 > 0.08:
-    st.error("ACOS alto → você está pagando caro para vender")
-
-if cus7 > cus15:
-    st.warning("Investimento aumentou → validar retorno")
-
-# =========================
-# 🚨 STATUS
-# =========================
-st.subheader("🚨 Status da Operação")
-
-if roas7 > 6:
-    st.success("Escala saudável")
-elif roas7 < 3:
-    st.error("Operação em risco")
-else:
-    st.warning("Operação em ajuste")
-
-# =========================
-# 📂 CAMPANHAS
-# =========================
-st.subheader("📂 Campanhas")
-
-file = st.file_uploader("Upload campanhas CSV", type=["csv"])
-
-if file:
-    df = pd.read_csv(file)
-
-    def analisar(row):
-        roas = row["faturamento"] / row["custo"] if row["custo"] > 0 else 0
-
-        if roas > 6:
-            return "ESCALAR"
-        elif roas < 3:
-            return "PAUSAR"
-        else:
-            return "AJUSTAR"
-
-    df["AÇÃO"] = df.apply(analisar, axis=1)
-
-    st.dataframe(df)
-
-    st.subheader("🎯 Campanhas que precisam ajuste")
-    st.dataframe(df[df["AÇÃO"] != "ESCALAR"])
-
-# =========================
-# 🚀 PLANO DE AÇÃO
-# =========================
-st.subheader("🚀 Plano de Ação DOMMA")
-
-if st.button("Gerar Plano Estratégico"):
+    # Plano de ação
+    st.subheader("🚀 Plano de Ação")
 
     plano = []
 
-    if ctr7 < ctr15:
-        plano.append("Melhorar imagem e título")
+    if dados["cliques"] > 50 and dados["vendas"] == 0:
+        plano.append("Revisar preço e oferta")
 
-    if ven7 == 0 and clk7 > 10:
-        plano.append("Revisar oferta, preço e prova social")
+    if dados["visitas"] > 1000:
+        plano.append("Melhorar conversão da página")
 
-    if roas7 < 3:
-        plano.append("Pausar campanhas ruins")
-
-    if roas7 > 6:
-        plano.append("Escalar orçamento gradualmente")
-
-    if acos7 > 0.08:
-        plano.append("Reduzir investimento ou melhorar conversão")
-
-    if cus7 > cus15:
-        plano.append("Revisar aumento de investimento")
+    if dados["vendas"] > 100:
+        plano.append("Escalar investimento")
 
     if not plano:
-        plano.append("Manter estratégia atual")
+        plano.append("Coletar mais dados")
 
     for p in plano:
         st.write("✅", p)
