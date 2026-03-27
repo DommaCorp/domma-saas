@@ -3,7 +3,7 @@ import pandas as pd
 from PIL import Image
 import plotly.express as px
 import pytesseract
-img = np.array(imagem)
+img = (imagem)
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 texto = pytesseract.image_to_string(gray)
 
@@ -15,7 +15,7 @@ st.title("🧠 DOMMA SaaS - Inteligência de Ads")
 # OCR (LEITURA DE PRINT)
 # =========================
 def extrair_texto(imagem):
-    img = np.array(imagem)
+    img = (imagem)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     texto = pytesseract.image_to_string(gray)
     return texto
