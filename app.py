@@ -8,7 +8,7 @@ st.set_page_config(page_title="DOMMA SaaS", layout="wide")
 st.title("🧠 DOMMA SaaS - Inteligência de Ads")
 
 # =========================
-# FUNÇÃO OCR (SEM ERRO NA NUVEM)
+# FUNÇÃO OCR (SEGURA NA NUVEM)
 # =========================
 def extrair_texto(imagem):
     try:
@@ -18,23 +18,69 @@ def extrair_texto(imagem):
         return "OCR não disponível na nuvem"
 
 # =========================
-# UPLOAD DE PRINT (CORRETO)
+# 📸 UPLOAD DE PRINTS (ESTRUTURA PROFISSIONAL)
 # =========================
-st.subheader("📸 Análise por Print")
+st.subheader("📸 Upload de Prints - Análise Completa")
 
-img_7 = st.file_uploader("Upload do print (7 dias)", type=["png", "jpg"])
+col1, col2, col3 = st.columns(3)
 
-if img_7:
-    imagem = Image.open(img_7)
-    st.image(imagem, caption="Print carregado", use_container_width=True)
+with col1:
+    st.markdown("### 📊 Métricas")
+    metrica_30 = st.file_uploader("Métricas 30 dias", type=["png","jpg"], key="m30")
+    metrica_15 = st.file_uploader("Métricas 15 dias", type=["png","jpg"], key="m15")
+    metrica_7 = st.file_uploader("Métricas 7 dias", type=["png","jpg"], key="m7")
 
+with col2:
+    st.markdown("### 📈 Painel Ads")
+    painel_30 = st.file_uploader("Painel Ads 30 dias", type=["png","jpg"], key="p30")
+    painel_15 = st.file_uploader("Painel Ads 15 dias", type=["png","jpg"], key="p15")
+    painel_7 = st.file_uploader("Painel Ads 7 dias", type=["png","jpg"], key="p7")
+
+with col3:
+    st.markdown("### 🧩 Campanhas")
+    campanhas_img = st.file_uploader("Imagem geral das campanhas", type=["png","jpg"], key="camp")
+
+st.divider()
+
+# =========================
+# 🖼️ VISUALIZAÇÃO
+# =========================
+st.subheader("🖼️ Visualização dos Prints")
+
+colA, colB, colC = st.columns(3)
+
+with colA:
+    if metrica_30:
+        st.image(metrica_30, caption="Métricas 30 dias", use_container_width=True)
+    if metrica_15:
+        st.image(metrica_15, caption="Métricas 15 dias", use_container_width=True)
+    if metrica_7:
+        st.image(metrica_7, caption="Métricas 7 dias", use_container_width=True)
+
+with colB:
+    if painel_30:
+        st.image(painel_30, caption="Painel 30 dias", use_container_width=True)
+    if painel_15:
+        st.image(painel_15, caption="Painel 15 dias", use_container_width=True)
+    if painel_7:
+        st.image(painel_7, caption="Painel 7 dias", use_container_width=True)
+
+with colC:
+    if campanhas_img:
+        st.image(campanhas_img, caption="Campanhas", use_container_width=True)
+
+# =========================
+# 🧠 OCR (LEITURA DO PRINT 7 DIAS)
+# =========================
+st.subheader("🧠 Leitura Inteligente (OCR)")
+
+if metrica_7:
+    imagem = Image.open(metrica_7)
     texto = extrair_texto(imagem)
-
-    st.subheader("🔍 Texto identificado")
     st.code(texto)
 
 # =========================
-# INPUT DE MÉTRICAS
+# 📊 INPUT MANUAL (CASO NÃO USE OCR)
 # =========================
 st.sidebar.header("📊 Métricas da Campanha")
 
@@ -56,7 +102,7 @@ def calc():
 ctr, roas, tacos = calc()
 
 # =========================
-# ALERTA
+# 🚨 ALERTA
 # =========================
 st.subheader("🚨 Status da Campanha")
 
@@ -68,7 +114,7 @@ else:
     st.success("✅ Campanha saudável")
 
 # =========================
-# CLASSIFICAÇÃO DOMMA
+# 📊 CLASSIFICAÇÃO DOMMA
 # =========================
 def classificar():
     if roas > 6 and tacos < 0.03:
@@ -84,7 +130,7 @@ st.subheader("📊 Classificação DOMMA")
 st.info(status)
 
 # =========================
-# DIAGNÓSTICO
+# 🧠 DIAGNÓSTICO
 # =========================
 def diagnostico():
     if imp > 0 and clk == 0:
@@ -100,7 +146,7 @@ st.subheader("🧠 Diagnóstico")
 st.write(diagnostico())
 
 # =========================
-# GRÁFICO
+# 📈 GRÁFICO
 # =========================
 df = pd.DataFrame({
     "Métrica": ["CTR", "ROAS", "TACOS"],
@@ -111,32 +157,7 @@ fig = px.bar(df, x="Métrica", y="Valor")
 st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# CAMPANHAS CSV
-# =========================
-st.subheader("📂 Campanhas (7 dias)")
-
-camp_file = st.file_uploader("Upload campanhas (CSV)", type=["csv"])
-
-if camp_file:
-    df_camp = pd.read_csv(camp_file)
-
-    def classificar_linha(row):
-        roas = row["faturamento"] / row["custo"] if row["custo"] > 0 else 0
-        tacos = row["custo"] / row["faturamento"] if row["faturamento"] > 0 else 0
-
-        if roas > 6:
-            return "ESCALAR"
-        elif roas < 3:
-            return "PAUSAR"
-        else:
-            return "OTIMIZAR"
-
-    df_camp["STATUS"] = df_camp.apply(classificar_linha, axis=1)
-
-    st.dataframe(df_camp, use_container_width=True)
-
-# =========================
-# PLANO DE AÇÃO
+# 🚀 PLANO DE AÇÃO
 # =========================
 st.subheader("🚀 Plano de Ação")
 
