@@ -3,4 +3,3 @@ pandas
 pillow
 plotly
 pytesseract
-opencv-python
