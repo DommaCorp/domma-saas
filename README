@@ -1,0 +1,15 @@
+# 🧠 DOMMA SaaS
+
+Sistema inteligente de análise de Ads para Mercado Livre
+
+## 🚀 Funcionalidades
+- Leitura de métricas
+- OCR de prints
+- Classificação automática DOMMA
+- Plano de ação inteligente
+- Alertas de prejuízo
+
+## 🛠️ Como rodar
+```bash
+pip install -r requirements.txt
+streamlit run app.py
